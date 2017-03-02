@@ -4,12 +4,11 @@ var httpHelpers = require('./http-helpers');
 var fs = require('fs');
 // require more modules/folders here!
 
-
-
 exports.handleRequest = function (req, res) {
-
+  // console.log('This is how "req" looks like:', req);
   var statusCode = 200;
-  console.log('req.method', req.method);
+  // console.log('This is the req.method', req.method);
+  // BELOW IS GET REQUEST FROM THE CLIENT
   if (req.method === 'GET') {
     // CONDITION 1: load index.html when we land the page
     if (req.url === '/') {
@@ -56,6 +55,32 @@ exports.handleRequest = function (req, res) {
       res.end('Page is not found. 404 error.');
     } 
   }
+  // BELOW IS POST REQUEST FROM THE CLIENT
+  if (req.method === 'POST') {    
+    req.on('data', function(url) {
+      // console.log('this is url', url.toString('utf8'));
+      // console.log(url.toString());
+      // console.log(typeof url);
+      statusCode = 302;
+      var stringifyInputUrl = url.toString().slice(4);
+      // console.log(stringifyInputUrl);
+      // console.log('This is the URL we are typing in:', stringifyInputUrl);
+      
+      var loadingPageHTML;
+      fs.readFile(archive.paths.loading, function(err, data) {
+        if (err) {
+          return;
+        } else {
+          loadingPageHTML = data;
+        }
+      });
+
+      archive.addUrlToList(stringifyInputUrl, function(exist) {
+        res.writeHead(statusCode, httpHelpers.headers);
+        res.end(loadingPageHTML);
+      });
+    });
+  }
 };
     
 
@@ -66,16 +91,6 @@ exports.handleRequest = function (req, res) {
   //<- need to get actual html text
   // use httpHelpers.serveAssets ???
 
-//   if (req.method === 'POST') {
-//     request.on('data', function(url) {
-//       statusCode = 302;
-//       archive.addUrlToList(url, function(exist) {
-//         res.writeHead(statusCode, httpHelpers.headers);
-//         res.end();
-//       });
-//     });
-//   };
-// };
 
 
 
