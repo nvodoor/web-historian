@@ -27,21 +27,32 @@ exports.initialize = function(pathsObj) {
 // modularize your code. Keep it clean!
 
 exports.readListOfUrls = function(callback) {
-
   fs.readFile(this.paths.list, 'utf8', function (err, data) {
-    
     if (err) {
       console.log('There is an error in read list.');
       return;
     }
-
     callback(data.split('\n'));
-
   });
-
 };
 
 exports.isUrlInList = function(url, callback) {
+  fs.readFile(this.paths.list, 'utf8', function (err, data) {
+    if (err) {
+      console.log('There is an error for isURLInList test.');
+      return;
+    }
+    var dataIntoArray = data.split('\n');
+    var isTrue = false;
+    for (var i = 0; i < dataIntoArray.length; i++) {
+      if (dataIntoArray[i] === url) {
+        isTrue = true;
+      }
+    }
+    callback(isTrue);
+  });
+
+  // return true/false
 };
 
 exports.addUrlToList = function(url, callback) {
