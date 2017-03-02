@@ -8,32 +8,74 @@ var fs = require('fs');
 
 exports.handleRequest = function (req, res) {
 
+  var statusCode = 200;
+  console.log('req.method', req.method);
   if (req.method === 'GET') {
-    fs.readFile(archive.paths.index, 'utf8', function(err, data) {
-      if (err) {
-        return;
-      } else {
-        res.writeHead(200, httpHelpers.headers);
-        // console.log(typeof data);
-        // console.log('this is data', data);
-        res.end(JSON.stringify(data));
-      }
-    });
-  } 
+    // CONDITION 1: load index.html when we land the page
+    if (req.url === '/') {
+
+      fs.readFile(archive.paths.siteAssets + '/index.html', function(err, data) {
+        if (err) {
+          // console.log('err');
+          return;
+        } else {
+          res.writeHead(statusCode, httpHelpers.headers);
+          res.end(data);
+        }
+      });
+      // CONDITION 2: load archived page if url is already in archived
+      archive.isUrlArchived(req.url, function(exist) {
+        if (exist) {
+          fs.readFile(archive.paths.archivedSites + req.url, function (err, data) {
+            if (err) {
+              return;
+            } else {
+              res.writeHead(statusCode, httpHelpers.headers);
+              res.end(data);
+            }
+          });
+        }
+      });
+      // CONDITION 3: load loading.html if url is in url list
+      archive.isUrlInList(req.url, function(exist) {
+        if (exist) {
+          fs.readFile(archive.paths.list, function(err, data) {
+            if (err) {
+              return;
+            } else {
+              res.writeHead(statusCode, httpHelpers.headers);
+              res.end(data);
+            }
+          });
+        }
+      });
+    } else {
+      // CONDITION 4: load nothing if no page to load
+      statusCode = 404;
+      res.writeHead(statusCode, httpHelpers.headers);
+      res.end('Page is not found. 404 error.');
+    } 
+  }
+};
+    
+
+
+
+
+
   //<- need to get actual html text
   // use httpHelpers.serveAssets ???
-};
 
-
-
-
-
-
-
-
-
-
-
+//   if (req.method === 'POST') {
+//     request.on('data', function(url) {
+//       statusCode = 302;
+//       archive.addUrlToList(url, function(exist) {
+//         res.writeHead(statusCode, httpHelpers.headers);
+//         res.end();
+//       });
+//     });
+//   };
+// };
 
 
 
