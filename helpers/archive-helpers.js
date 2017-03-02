@@ -42,24 +42,46 @@ exports.isUrlInList = function(url, callback) {
       console.log('There is an error for isURLInList test.');
       return;
     }
-    var dataIntoArray = data.split('\n');
+    var websiteArray = data.split('\n');
     var isTrue = false;
-    for (var i = 0; i < dataIntoArray.length; i++) {
-      if (dataIntoArray[i] === url) {
+    for (var i = 0; i < websiteArray.length; i++) {
+      if (websiteArray[i] === url) {
         isTrue = true;
       }
     }
-    callback(isTrue);
+    if (callback) {
+      callback(isTrue);
+    } else {
+      return isTrue;
+    }
+    
   });
-
-  // return true/false
 };
 
 exports.addUrlToList = function(url, callback) {
+
+  fs.appendFile(this.paths.list, url + '\n', function (err, data) {
+    callback();
+  });
+
 };
 
 exports.isUrlArchived = function(url, callback) {
+
+  fs.readdir(this.paths.archivedSites, function(err, files) {
+    callback(_.contains(files, url));
+  });
+
 };
 
 exports.downloadUrls = function(urls) {
+
+  urls.forEach(function(url) {
+    fs.writeFile(exports.paths.archivedSites + '/' + url, 'testing only', function (err) {
+      if (err) {
+        return;
+      }
+    });
+  });
+
 };
