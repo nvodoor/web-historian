@@ -5,15 +5,17 @@ var fs = require('fs');
 // require more modules/folders here!
 
 exports.handleRequest = function (req, res) {
-  // console.log('This is how "req" looks like:', req);
+
   var statusCode = 200;
-  // console.log('This is the req.method', req.method);
+  var slicedReqUrl = req.url.slice(1);
+
   // BELOW IS GET REQUEST FROM THE CLIENT
   if (req.method === 'GET') {
+    console.log('These are the test case URLs', req.url);
     // CONDITION 1: load index.html when we land the page
-    if (req.url === '/') {
-
+    if (req.url === '/') { // 127.0.0.1:8000/
       fs.readFile(archive.paths.siteAssets + '/index.html', function(err, data) {
+        // console.log('line 19', req.url);
         if (err) {
           // console.log('err');
           return;
@@ -22,10 +24,12 @@ exports.handleRequest = function (req, res) {
           res.end(data);
         }
       });
-      // CONDITION 2: load archived page if url is already in archived
-      archive.isUrlArchived(req.url, function(exist) {
+    } else if (req.url !== '/') {
+        // CONDITION 2: load archived page if url is already in archived
+      archive.isUrlArchived(slicedReqUrl, function(exist) {
+        console.log('this is the req url!!!!!!', slicedReqUrl);
         if (exist) {
-          fs.readFile(archive.paths.archivedSites + req.url, function (err, data) {
+          fs.readFile(archive.paths.archivedSites + '/' + slicedReqUrl, function (err, data) {
             if (err) {
               return;
             } else {
@@ -33,28 +37,30 @@ exports.handleRequest = function (req, res) {
               res.end(data);
             }
           });
-        }
-      });
-      // CONDITION 3: load loading.html if url is in url list
-      archive.isUrlInList(req.url, function(exist) {
-        if (exist) {
-          fs.readFile(archive.paths.list, function(err, data) {
-            if (err) {
-              return;
+        } else {
+            // CONDITION 3: load loading.html if url is in url list
+          archive.isUrlInList(slicedReqUrl, function(exist) {
+            if (exist) {
+              fs.readFile(archive.paths.list, function(err, data) {
+                if (err) {
+                  return;
+                } else {
+                  res.writeHead(statusCode, httpHelpers.headers);
+                  res.end(data);
+                }
+              });
             } else {
+              // CONDITION 4: load nothing if no page to load
+              statusCode = 404;
               res.writeHead(statusCode, httpHelpers.headers);
-              res.end(data);
-            }
+              res.end('Page is not found. 404 error.');
+            } 
           });
         }
       });
-    } else {
-      // CONDITION 4: load nothing if no page to load
-      statusCode = 404;
-      res.writeHead(statusCode, httpHelpers.headers);
-      res.end('Page is not found. 404 error.');
     } 
   }
+
   // BELOW IS POST REQUEST FROM THE CLIENT
   if (req.method === 'POST') {    
     req.on('data', function(url) {
