@@ -2,12 +2,14 @@ var path = require('path');
 var archive = require('../helpers/archive-helpers');
 var httpHelpers = require('./http-helpers');
 var fs = require('fs');
+var fetcher = require('../workers/htmlfetcher.js');
 // require more modules/folders here!
 
 exports.handleRequest = function (req, res) {
 
   var statusCode = 200;
   var slicedReqUrl = req.url.slice(1);
+  console.log('top slice url:', req.url);
 
   // BELOW IS GET REQUEST FROM THE CLIENT
   if (req.method === 'GET') {
@@ -28,6 +30,7 @@ exports.handleRequest = function (req, res) {
         // CONDITION 2: load archived page if url is already in archived
       archive.isUrlArchived(slicedReqUrl, function(exist) {
         console.log('this is the req url!!!!!!', slicedReqUrl);
+        console.log('this is exist', exist);
         if (exist) {
           fs.readFile(archive.paths.archivedSites + '/' + slicedReqUrl, function (err, data) {
             if (err) {
@@ -81,7 +84,9 @@ exports.handleRequest = function (req, res) {
         }
       });
 
+      // might also need to check if the url already exists in list, or, archives/sites
       archive.addUrlToList(stringifyInputUrl, function(exist) {
+        // calling the fetcher.websiteFetcher function by passing in the url
         res.writeHead(statusCode, httpHelpers.headers);
         res.end(loadingPageHTML);
       });
@@ -89,14 +94,6 @@ exports.handleRequest = function (req, res) {
   }
 };
     
-
-
-
-
-
-  //<- need to get actual html text
-  // use httpHelpers.serveAssets ???
-
 
 
 
