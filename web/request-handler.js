@@ -23,6 +23,7 @@ exports.handleRequest = function (req, res) {
           return;
         } else {
           res.writeHead(statusCode, httpHelpers.headers);
+          console.log('Looking for index.html', data);
           res.end(data);
         }
       });
@@ -65,6 +66,7 @@ exports.handleRequest = function (req, res) {
   }
 
   // BELOW IS POST REQUEST FROM THE CLIENT
+  var realUrl;
   if (req.method === 'POST') {    
     req.on('data', function(url) {
       // console.log('this is url', url.toString('utf8'));
@@ -72,24 +74,49 @@ exports.handleRequest = function (req, res) {
       // console.log(typeof url);
       statusCode = 302;
       var stringifyInputUrl = url.toString().slice(4);
+      realUrl = stringifyInputUrl;
       // console.log(stringifyInputUrl);
       // console.log('This is the URL we are typing in:', stringifyInputUrl);
       
-      var loadingPageHTML;
-      fs.readFile(archive.paths.loading, function(err, data) {
-        if (err) {
-          return;
-        } else {
-          loadingPageHTML = data;
-        }
-      });
+      // fs.readFile(archive.paths.loading, function(err, data) {
+      //   if (err) {
+      //     return;
+      //   } else {
+      //     loadingPageHTML = data;
+      //   }
+      // });
 
       // might also need to check if the url already exists in list, or, archives/sites
-      archive.addUrlToList(stringifyInputUrl, function(exist) {
+    });
+
+    var loadingPageHTML;
+    req.on('end', function () {
+      archive.isUrlInList(realUrl, function (exist) {
+        console.log(exist);
+        if (exist) {
+          fs.readFile(archive.paths.archivedSites + '/' + realUrl, 'utf-8', function (err, data) {
+            if (err) {
+              return;
+            } else {
+              res.end(data);
+            }
+          });
+        } else {
+          fs.readFile(archive.paths.loading, function(err, data) {
+            if (err) {
+              return;
+            } else {
+              loadingPageHTML = data;
+            }
+          });
+        }
+      });
+      archive.addUrlToList(realUrl, function(exist) {
         // calling the fetcher.websiteFetcher function by passing in the url
         res.writeHead(statusCode, httpHelpers.headers);
         res.end(loadingPageHTML);
       });
+
     });
   }
 };
