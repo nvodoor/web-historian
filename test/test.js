@@ -50,6 +50,10 @@ describe('server', function() {
       it('Should 404 when asked for a nonexistent file', function(done) {
         request.get('/arglebargle').expect(404, done);
       });
+
+      it('Should return Page is not found. 404 error. when asked for a nonexistent file', function(done) {
+        request.get('/arglebargle').expect('Page is not found. 404 error.', done);
+      });
     });
 
     describe('POST', function () {
@@ -124,6 +128,7 @@ describe('archive helpers', function() {
   });
 
   describe('#isUrlArchived', function () {
+
     it('should check if a url is archived', function (done) {
       fs.writeFileSync(archive.paths.archivedSites + '/www.example.com', 'blah blah');
 
@@ -150,6 +155,18 @@ describe('archive helpers', function() {
       // Ugly hack to wait for all downloads to finish.
       setTimeout(function () {
         expect(fs.readdirSync(archive.paths.archivedSites)).to.deep.equal(urlArray);
+        done();
+      }, 500);
+    });
+
+    it('should not download urls it is not asked to', function (done) {
+      var urlArray = ['www.example.com', 'www.google.com'];
+      var urlsARR = ['www.example1.com'];
+      archive.downloadUrls(urlArray);
+
+      // Ugly hack to wait for all downloads to finish.
+      setTimeout(function () {
+        expect(fs.readdirSync(archive.paths.archivedSites)).to.not.deep.equal(urlsARR);
         done();
       }, 500);
     });
