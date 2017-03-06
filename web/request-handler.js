@@ -3,6 +3,7 @@ var archive = require('../helpers/archive-helpers');
 var httpHelpers = require('./http-helpers');
 var fs = require('fs');
 var fetcher = require('../workers/htmlfetcher.js');
+var Promise = require('bluebird');
 // require more modules/folders here!
 
 exports.handleRequest = function (req, res) {
